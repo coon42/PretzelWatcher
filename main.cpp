@@ -88,6 +88,18 @@ public:
 int PretzelWatcherApp::run() {
   printf("--- Pretzel Watcher ---\n\n");
 
+  PretzelProcess pretzel("Pretzel Rocks", "Chrome_WidgetWin_1");
+
+  Logger::log("Looking for Pretzel process...\n");
+
+  if (!pretzel.isRunning()) {
+    Logger::logError("Pretzel is not running. Quitting...\n");
+
+    return 1;
+  }
+
+  Logger::logSuccess("Pretzel is running with process ID: 0x%X\n", pretzel.getProcessId());
+
   bool finished = false;
 
   printf("Press 'q' to quit.\n");
