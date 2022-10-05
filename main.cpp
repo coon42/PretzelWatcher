@@ -79,6 +79,14 @@ bool PretzelProcess::close() {
 class PretzelWatcherApp {
 public:
   int run();
+
+private:
+  HANDLE hThread_{INVALID_HANDLE_VALUE};
+  bool running_{false};
+
+  void startWorkerThread();
+  void stopWorkerThread();
+  static DWORD WINAPI workerThread(LPVOID lpParam);
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -87,6 +95,7 @@ public:
 
 int PretzelWatcherApp::run() {
   printf("--- Pretzel Watcher ---\n\n");
+  printf("Press 'q' to quit.\n\n");
 
   PretzelProcess pretzel("Pretzel Rocks", "Chrome_WidgetWin_1");
 
@@ -99,10 +108,9 @@ int PretzelWatcherApp::run() {
   }
 
   Logger::logSuccess("Pretzel is running with process ID: 0x%X\n", pretzel.getProcessId());
+  startWorkerThread();
 
   bool finished = false;
-
-  printf("Press 'q' to quit.\n");
 
   while (!finished) {
     if (_kbhit()) {
@@ -114,6 +122,43 @@ int PretzelWatcherApp::run() {
 
     Sleep(100);
   }
+
+  stopWorkerThread();
+
+  return 0;
+}
+
+void PretzelWatcherApp::startWorkerThread() {
+  Logger::log("Starting worker thread...\n");
+
+  DWORD threadId;
+  hThread_ = CreateThread(0, 0, workerThread, this, 0, &threadId);
+}
+
+void PretzelWatcherApp::stopWorkerThread() {
+  Logger::log("Stopping worker thread...\n");
+
+  running_ = false;
+
+  if (hThread_ != INVALID_HANDLE_VALUE) {
+    WaitForSingleObject(hThread_, INFINITE);
+
+    CloseHandle(hThread_);
+    hThread_ = INVALID_HANDLE_VALUE;
+  }
+
+  Logger::logSuccess("Worker thread stopped.\n");
+}
+
+DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
+  PretzelWatcherApp* pThis = static_cast<PretzelWatcherApp*>(lpParam);
+
+  pThis->running_ = true;
+
+  Logger::logSuccess("Worker thread started.\n");
+
+  while (pThis->running_)
+    Sleep(1000);
 
   return 0;
 }
