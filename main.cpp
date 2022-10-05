@@ -82,7 +82,7 @@ public:
 
 private:
   HANDLE hThread_{INVALID_HANDLE_VALUE};
-  bool running_{false};
+  bool doWork_{false};
 
   void startWorkerThread();
   void stopWorkerThread();
@@ -127,7 +127,7 @@ void PretzelWatcherApp::startWorkerThread() {
 void PretzelWatcherApp::stopWorkerThread() {
   Logger::log("Stopping worker thread...\n");
 
-  running_ = false;
+  doWork_ = false;
 
   if (hThread_ != INVALID_HANDLE_VALUE) {
     WaitForSingleObject(hThread_, INFINITE);
@@ -142,7 +142,7 @@ void PretzelWatcherApp::stopWorkerThread() {
 DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   PretzelWatcherApp* pThis = static_cast<PretzelWatcherApp*>(lpParam);
 
-  pThis->running_ = true;
+  pThis->doWork_ = true;
 
   Logger::logSuccess("Worker thread started.\n");
 
@@ -158,7 +158,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 
   Logger::logSuccess("Pretzel is running with process ID: 0x%X\n", pretzel.getProcessId());
 
-  while (pThis->running_)
+  while (pThis->doWork_)
     Sleep(1000);
 
   return 0;
