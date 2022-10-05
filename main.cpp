@@ -1,6 +1,9 @@
 #include <iostream>
 #include <conio.h>
 
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+
 #include "Logger.h"
 
 using namespace std;
@@ -20,7 +23,13 @@ public:
   bool launch();
   bool close();
 
+  void playMusic() const;
+  void stopMusic() const;
+
 private:
+  void sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const;
+  void pressKey(BYTE vKey, BYTE bScan) const;
+
   const string title_;
   const string className_;
 };
@@ -70,6 +79,34 @@ bool PretzelProcess::launch() {
 
 bool PretzelProcess::close() {
   return true;
+}
+
+void PretzelProcess::sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const {
+  INPUT ip{0};
+  ip.type = INPUT_KEYBOARD;
+  ip.ki.wScan = bScan;
+  ip.ki.time = 0;
+  ip.ki.dwExtraInfo = 0;
+  ip.ki.wVk = vKey;
+  ip.ki.dwFlags = dwFlags;
+  SendInput(1, &ip, sizeof(INPUT));
+}
+
+void PretzelProcess::pressKey(BYTE vKey, BYTE bScan) const {
+  sendInput(vKey, bScan, 0);
+  sendInput(vKey, bScan, KEYEVENTF_KEYUP);
+}
+
+void PretzelProcess::playMusic() const {
+  Logger::log("Start playing music...\n");
+
+  pressKey(VK_MEDIA_PLAY_PAUSE, DIK_PLAYPAUSE);
+}
+
+void PretzelProcess::stopMusic() const {
+  Logger::log("Stop playing music...\n");
+
+  pressKey(VK_MEDIA_STOP, DIK_MEDIASTOP);
 }
 
 //--------------------------------------------------------------------------------------------------------------
