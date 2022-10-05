@@ -97,17 +97,6 @@ int PretzelWatcherApp::run() {
   printf("--- Pretzel Watcher ---\n\n");
   printf("Press 'q' to quit.\n\n");
 
-  PretzelProcess pretzel("Pretzel Rocks", "Chrome_WidgetWin_1");
-
-  Logger::log("Looking for Pretzel process...\n");
-
-  if (!pretzel.isRunning()) {
-    Logger::logError("Pretzel is not running. Quitting...\n");
-
-    return 1;
-  }
-
-  Logger::logSuccess("Pretzel is running with process ID: 0x%X\n", pretzel.getProcessId());
   startWorkerThread();
 
   bool finished = false;
@@ -156,6 +145,18 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   pThis->running_ = true;
 
   Logger::logSuccess("Worker thread started.\n");
+
+  PretzelProcess pretzel("Pretzel Rocks", "Chrome_WidgetWin_1");
+
+  Logger::log("Looking for Pretzel process...\n");
+
+  if (!pretzel.isRunning()) {
+    Logger::logError("Pretzel is not running. Quitting...\n");
+
+    return 1;
+  }
+
+  Logger::logSuccess("Pretzel is running with process ID: 0x%X\n", pretzel.getProcessId());
 
   while (pThis->running_)
     Sleep(1000);
