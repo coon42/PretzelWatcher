@@ -85,11 +85,6 @@ bool PretzelProcess::isRunning() const {
   if (!processId)
     return false;
 
-  const HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
-
-  if (!hProc)
-    return false;
-
   return true;
 }
 
