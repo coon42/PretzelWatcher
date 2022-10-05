@@ -100,20 +100,16 @@ int PretzelWatcherApp::run() {
 
   startWorkerThread();
 
-  bool finished = false;
-
-  while (!finished) {
+  while (workerThreadIsRunning()) {
     if (_kbhit()) {
       char c = _getch();
 
       if (c == 'q')
-        finished = true;
+        stopWorkerThread();
     }
 
     Sleep(100);
   }
-
-  stopWorkerThread();
 
   return 0;
 }
