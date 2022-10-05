@@ -221,7 +221,8 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     return 1;
   }
 
-  Logger::logSuccess("Pretzel is running with process ID: 0x%X\n", pretzel.getProcessId());
+  Logger::logSuccess("Pretzel is running at '%s' with process ID: 0x%X\n", pretzel.exePath().c_str(),
+      pretzel.getProcessId());
 
   while (pThis->doWork_)
     Sleep(1000);
