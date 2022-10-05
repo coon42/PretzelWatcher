@@ -17,6 +17,7 @@ public:
   PretzelProcess(const string& title, const string& className);
 
   DWORD getProcessId() const;
+  const string& exePath() const { return exePath_; }
 
   bool isRunning() const;
   bool launch();
@@ -29,9 +30,11 @@ private:
   void sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const;
   void pressKey(BYTE vKey, BYTE bScan) const;
   HWND getHwnd() const;
+  string getExePath() const;
 
   const string title_;
   const string className_;
+  const string exePath_;
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -39,7 +42,7 @@ private:
 //--------------------------------------------------------------------------------------------------------------
 
 PretzelProcess::PretzelProcess(const string& title, const string& className)
-    : title_(title), className_(className) {
+    : title_(title), className_(className), exePath_(getExePath()) {
 
 }
 
@@ -57,6 +60,23 @@ DWORD PretzelProcess::getProcessId() const {
   GetWindowThreadProcessId(hWnd, &processId);
 
   return processId;
+}
+
+string PretzelProcess::getExePath() const {
+  HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, getProcessId());
+
+  if (!hProc)
+    return "";
+
+  char pExePath[MAX_PATH];
+  DWORD bufferSize = sizeof(pExePath);
+
+  if (QueryFullProcessImageNameA(hProc, 0, pExePath, &bufferSize) == 0)
+    return "";
+
+  CloseHandle(hProc);
+
+  return pExePath;
 }
 
 bool PretzelProcess::isRunning() const {
