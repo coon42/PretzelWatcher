@@ -16,7 +16,6 @@ class PretzelProcess {
 public:
   PretzelProcess(const string& title, const string& className);
 
-  HWND getHwnd() const;
   DWORD getProcessId() const;
 
   bool isRunning() const;
@@ -29,6 +28,7 @@ public:
 private:
   void sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const;
   void pressKey(BYTE vKey, BYTE bScan) const;
+  HWND getHwnd() const;
 
   const string title_;
   const string className_;
