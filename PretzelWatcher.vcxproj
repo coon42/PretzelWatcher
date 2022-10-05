@@ -131,9 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="logger.h" />
     <ClInclude Include="singleton.h" />
     <ClInclude Include="stringhelpers.h" />
   </ItemGroup>
