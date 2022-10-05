@@ -122,6 +122,9 @@ void PretzelWatcherApp::startWorkerThread() {
 
   DWORD threadId;
   hThread_ = CreateThread(0, 0, workerThread, this, 0, &threadId);
+
+  if (hThread_)
+    doWork_ = true;
 }
 
 void PretzelWatcherApp::stopWorkerThread() {
@@ -141,8 +144,6 @@ void PretzelWatcherApp::stopWorkerThread() {
 
 DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   PretzelWatcherApp* pThis = static_cast<PretzelWatcherApp*>(lpParam);
-
-  pThis->doWork_ = true;
 
   Logger::logSuccess("Worker thread started.\n");
 
