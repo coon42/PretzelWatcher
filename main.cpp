@@ -1,6 +1,77 @@
 #include <iostream>
 #include <conio.h>
 
+#include "Logger.h"
+
+using namespace std;
+
+//--------------------------------------------------------------------------------------------------------------
+// PretzelProcess
+//--------------------------------------------------------------------------------------------------------------
+
+class PretzelProcess {
+public:
+  PretzelProcess(const string& title, const string& className);
+
+  HWND getHwnd() const;
+  DWORD getProcessId() const;
+
+  bool isRunning() const;
+  bool launch();
+  bool close();
+
+private:
+  const string title_;
+  const string className_;
+};
+
+//--------------------------------------------------------------------------------------------------------------
+// PretzelProcess
+//--------------------------------------------------------------------------------------------------------------
+
+PretzelProcess::PretzelProcess(const string& title, const string& className)
+    : title_(title), className_(className) {
+
+}
+
+HWND PretzelProcess::getHwnd() const {
+  return FindWindowA(className_.c_str(), title_.c_str());
+}
+
+DWORD PretzelProcess::getProcessId() const {
+  const HWND hWnd = getHwnd();
+
+  if (hWnd == INVALID_HANDLE_VALUE)
+    return 0;
+
+  DWORD processId = 0;
+  GetWindowThreadProcessId(hWnd, &processId);
+
+  return processId;
+}
+
+bool PretzelProcess::isRunning() const {
+  const DWORD processId = getProcessId();
+
+  if (!processId)
+    return false;
+
+  const HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
+
+  if (!hProc)
+    return false;
+
+  return true;
+}
+
+bool PretzelProcess::launch() {
+  return true;
+}
+
+bool PretzelProcess::close() {
+  return true;
+}
+
 //--------------------------------------------------------------------------------------------------------------
 // PretzelWatcherApp
 //--------------------------------------------------------------------------------------------------------------
