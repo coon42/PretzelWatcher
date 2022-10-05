@@ -86,6 +86,7 @@ private:
 
   void startWorkerThread();
   void stopWorkerThread();
+  bool workerThreadIsRunning() const;
   static DWORD WINAPI workerThread(LPVOID lpParam);
 };
 
@@ -140,6 +141,16 @@ void PretzelWatcherApp::stopWorkerThread() {
   }
 
   Logger::logSuccess("Worker thread stopped.\n");
+}
+
+bool PretzelWatcherApp::workerThreadIsRunning() const {
+  if (hThread_ == INVALID_HANDLE_VALUE)
+    return false;
+
+  if (WaitForSingleObject(hThread_, 0) == WAIT_OBJECT_0)
+    return false;
+
+  return true;
 }
 
 DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
