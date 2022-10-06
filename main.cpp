@@ -218,7 +218,7 @@ bool FileWatcher::waitForFileChange() {
 
 class PretzelWatcherApp {
 public:
-  PretzelWatcherApp();
+  PretzelWatcherApp(const string& songTxtFilePath, DWORD restartIntervalMs);
 
   int run();
 
@@ -232,14 +232,15 @@ private:
   static DWORD WINAPI workerThread(LPVOID lpParam);
 
   FileWatcher watcher_;
+  const DWORD restartIntervalMs_;
 };
 
 //--------------------------------------------------------------------------------------------------------------
 // PretzelWatcherApp
 //--------------------------------------------------------------------------------------------------------------
 
-PretzelWatcherApp::PretzelWatcherApp()
-    : watcher_("C:\\Users\\Public\\Documents\\current_song.txt") {
+PretzelWatcherApp::PretzelWatcherApp(const string& songTxtFilePath, DWORD restartIntervalMs)
+    : watcher_(songTxtFilePath), restartIntervalMs_(restartIntervalMs) {
 
 }
 
@@ -327,7 +328,10 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 //--------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char* ppArgv[]) {
-  PretzelWatcherApp app;
+  const string songTxtFilePath = "C:\\Users\\Public\\Documents\\current_song.txt";
+  const DWORD restartIntervalMs = 60 * 1000; // 1 minute
+
+  PretzelWatcherApp app(songTxtFilePath, restartIntervalMs);
 
   return app.run();
 }
