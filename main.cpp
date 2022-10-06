@@ -359,8 +359,15 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 //--------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char* ppArgv[]) {
-  const string songTxtFilePath = "C:\\Users\\Public\\Documents\\current_song.txt";
-  const DWORD restartIntervalMs = 60 * 1000; // 1 minute
+  if (argc != 3) {
+    printf("Usage: PretzelWatcher.exe <Track info file> <Restart interval minutes>\n");
+    printf("Example: PretzelWatcher.exe C:\\Users\\Public\\Documents\\current_song.txt 120\n");
+
+    return 1;
+  }
+
+  const string songTxtFilePath = ppArgv[1];
+  const DWORD restartIntervalMs = atoi(ppArgv[2]) * 1000 * 60;
 
   PretzelWatcherApp app(songTxtFilePath, restartIntervalMs);
 
