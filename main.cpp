@@ -317,8 +317,39 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   Logger::logSuccess("Pretzel is running at '%s' with process ID: 0x%X\n", pretzel.exePath().c_str(),
       pretzel.getProcessId());
 
-  while (pThis->doWork_)
-    Sleep(1000);
+  DWORD startTimeMs = GetTickCount();
+
+  while (pThis->doWork_) {
+    DWORD curTimeMs = GetTickCount();
+
+    if (curTimeMs - startTimeMs < pThis->restartIntervalMs_) {
+      curTimeMs = GetTickCount();
+      Sleep(1000);
+
+      continue;
+    }
+
+    Logger::logWarning("Waiting for end of current song before restart...\n");
+
+    pThis->watcher_.waitForFileChange();
+
+    Logger::logSuccess("Song finished. Now restarting Pretzel app...\n");
+
+    pretzel.stopMusic();
+    pretzel.close();
+
+    if (!pretzel.launch()) {
+      Logger::logError("Failed to relaunch Pretzel app! Quitting...\n");
+      return 2;
+    }
+
+    pThis->watcher_.waitForFileChange();
+
+    Logger::logSuccess("Pretzel running. Start playback...\n");
+
+    pretzel.playMusic();
+    startTimeMs = GetTickCount();
+  }
 
   return 0;
 }
