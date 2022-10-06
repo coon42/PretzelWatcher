@@ -157,6 +157,7 @@ class FileWatcher {
 public:
   FileWatcher(const string& filePath) : filePath_(filePath) { };
 
+  const string& filePath() { return filePath_; }
   bool waitForFileChange();
 
 private:
@@ -246,6 +247,10 @@ PretzelWatcherApp::PretzelWatcherApp(const string& songTxtFilePath, DWORD restar
 
 int PretzelWatcherApp::run() {
   printf("--- Pretzel Watcher ---\n\n");
+
+  printf("Track Info File: %s\n", watcher_.filePath().c_str());
+  printf("Restart interval: %d minutes\n\n", restartIntervalMs_ / (1000 * 60));
+
   printf("Press 'q' to quit.\n\n");
 
   startWorkerThread();
