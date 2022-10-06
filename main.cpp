@@ -246,8 +246,6 @@ PretzelWatcherApp::PretzelWatcherApp(const string& songTxtFilePath, DWORD restar
 }
 
 int PretzelWatcherApp::run() {
-  printf("--- Pretzel Watcher ---\n\n");
-
   printf("Track Info File: %s\n", watcher_.filePath().c_str());
   printf("Restart interval: %d minutes\n\n", restartIntervalMs_ / (1000 * 60));
 
@@ -364,6 +362,8 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 //--------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char* ppArgv[]) {
+  printf("--- Pretzel Watcher ---\n\n");
+
   if (argc != 3) {
     printf("Usage: PretzelWatcher.exe <Track info file> <Restart interval minutes>\n");
     printf("Example: PretzelWatcher.exe C:\\Users\\Public\\Documents\\current_song.txt 120\n");
