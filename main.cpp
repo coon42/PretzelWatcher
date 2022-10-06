@@ -90,6 +90,18 @@ bool PretzelProcess::isRunning() const {
 }
 
 bool PretzelProcess::launch() {
+  STARTUPINFOA si;
+  GetStartupInfoA(&si);
+
+  PROCESS_INFORMATION pi;
+  char* pCmdLine = const_cast<char*>(static_cast<const char*>(exePath_.c_str()));
+
+  if (CreateProcessA(NULL, pCmdLine, NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi) == 0)
+    return false;
+
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+
   return true;
 }
 
