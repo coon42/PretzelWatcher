@@ -316,7 +316,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   if (!pretzel.isRunning()) {
     Logger::logError("Pretzel is not running. Quitting...\n");
 
-    return 1;
+    return 2;
   }
 
   Logger::logSuccess("Pretzel is running at '%s' with process ID: 0x%X\n", pretzel.exePath().c_str(),
@@ -345,7 +345,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 
     if (!pretzel.launch()) {
       Logger::logError("Failed to relaunch Pretzel app! Quitting...\n");
-      return 2;
+      return 3;
     }
 
     pThis->watcher_.waitForFileChange();
