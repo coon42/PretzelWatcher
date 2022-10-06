@@ -106,6 +106,18 @@ bool PretzelProcess::launch() {
 }
 
 bool PretzelProcess::close() {
+  HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, getProcessId());
+
+  if (!hProc)
+    return false;
+
+  if (TerminateProcess(hProc, 0) == 0) {
+    CloseHandle(hProc);
+    return false;
+  }
+
+  CloseHandle(hProc);
+
   return true;
 }
 
