@@ -116,7 +116,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   ULONGLONG startTimeMs = GetTickCount64();
 
   while (pThis->doWork_) {
-    ULONGLONG curTimeMs = GetTickCount64();
+    const ULONGLONG curTimeMs = GetTickCount64();
 
     if (curTimeMs - startTimeMs < pThis->restartIntervalMs_) {
       Sleep(1000);
