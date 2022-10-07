@@ -113,13 +113,13 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
   Logger::logSuccess("Pretzel is running at '%s' with process ID: 0x%X\n", pretzel.exePath().c_str(),
       pretzel.getProcessId());
 
-  DWORD startTimeMs = GetTickCount();
+  ULONGLONG startTimeMs = GetTickCount64();
 
   while (pThis->doWork_) {
-    DWORD curTimeMs = GetTickCount();
+    ULONGLONG curTimeMs = GetTickCount64();
 
     if (curTimeMs - startTimeMs < pThis->restartIntervalMs_) {
-      curTimeMs = GetTickCount();
+      curTimeMs = GetTickCount64();
       Sleep(1000);
 
       continue;
@@ -144,7 +144,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     Logger::logSuccess("Pretzel running. Start playback...\n");
 
     pretzel.playMusic();
-    startTimeMs = GetTickCount();
+    startTimeMs = GetTickCount64();
   }
 
   return 0;
