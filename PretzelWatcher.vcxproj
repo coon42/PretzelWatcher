@@ -137,9 +137,11 @@
   <ItemGroup>
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pretzelprocess.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h" />
+    <ClInclude Include="pretzelprocess.h" />
     <ClInclude Include="singleton.h" />
     <ClInclude Include="stringhelpers.h" />
   </ItemGroup>
