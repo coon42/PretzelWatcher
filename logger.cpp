@@ -32,7 +32,7 @@ void Logger::printColored(const char* pFormat, va_list args, uint16_t colorAttri
     saved_attributes = consoleInfo.wAttributes;
     SetConsoleTextAttribute(hConsole, colorAttributes); // Change font color
 
-    std::chrono::system_clock::time_point time = std::chrono::system_clock::now();
+    std::chrono::zoned_time time{std::chrono::current_zone(), std::chrono::system_clock::now()};
 
     printf(std::format("[{:%Y-%m-%d %X}] ", time).c_str());
     printf(text.c_str());
