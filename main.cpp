@@ -2,6 +2,7 @@
 
 #include "logger.h"
 #include "pretzelprocess.h"
+#include "stringhelpers.h"
 #include "filewatcher.h"
 
 using namespace std;
@@ -122,6 +123,13 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     if (diffMs < pThis->restartIntervalMs_) {
       Sleep(1000);
 
+      const ULONGLONG timeRemainingS = (pThis->restartIntervalMs_ - diffMs) / 1000;
+
+      const ULONGLONG h = timeRemainingS / (60 * 60);
+      const ULONGLONG m = (timeRemainingS / 60) % 60;
+      const ULONGLONG s = timeRemainingS % 60;
+
+      SetConsoleTitleA(__("Pretzel Watcher - Next restart in: %02dh %02dm %02ds", h, m, s));
       continue;
     }
 
