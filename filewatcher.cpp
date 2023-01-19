@@ -18,7 +18,7 @@ FileWatcher::FileWatcher(const std::string& filePath) : filePath_(filePath) {
 
   dirPath_ = static_cast<const char*>(__("%s%s", pDrive, pDir));
 
-  hWatchDir_ = CreateFileA(dirPath_.c_str(),
+  hWatchDirWait_ = CreateFileA(dirPath_.c_str(),
     FILE_LIST_DIRECTORY,
     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
     NULL,
@@ -26,35 +26,48 @@ FileWatcher::FileWatcher(const std::string& filePath) : filePath_(filePath) {
     FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
     NULL);
 
-  overlapped_.hEvent = CreateEvent(NULL, FALSE, 0, NULL);
+  overlappedWait_.hEvent = CreateEvent(NULL, FALSE, 0, NULL);
+
+  hWatchDirCheck_ = CreateFileA(dirPath_.c_str(),
+    FILE_LIST_DIRECTORY,
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    NULL,
+    OPEN_EXISTING,
+    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+    NULL);
+
+  overlappedCheck_.hEvent = CreateEvent(NULL, FALSE, 0, NULL);
+
+  preparePeek();
 };
 
 FileWatcher::~FileWatcher() {
-  CloseHandle(overlapped_.hEvent);
-  CloseHandle(hWatchDir_);
+  CloseHandle(overlappedCheck_.hEvent);
+  CloseHandle(hWatchDirCheck_);
+
+  CloseHandle(overlappedWait_.hEvent);
+  CloseHandle(hWatchDirWait_);
 }
 
 bool FileWatcher::waitForFileChange(int timeoutMs) {
-  unsigned char pBuf[sizeof(FILE_NOTIFY_INFORMATION) + _MAX_PATH]{0};
-
-  if (ReadDirectoryChangesW(hWatchDir_, pBuf, sizeof(pBuf), FALSE, FILE_NOTIFY_CHANGE_ATTRIBUTES, NULL,
-      &overlapped_, NULL) == 0) {
-    Logger::logError("ERROR: ReadDirectoryChangesW function failed.\n");
+  if (ReadDirectoryChangesW(hWatchDirWait_, pNotifyBufWait_, sizeof(pNotifyBufWait_), FALSE,
+      FILE_NOTIFY_CHANGE_ATTRIBUTES, NULL, &overlappedWait_, NULL) == 0) {
+    Logger::logError("FileWatcher::waitForFileChange: ERROR: ReadDirectoryChangesW function failed.\n");
     return false;
   }
 
-  DWORD result = WaitForSingleObject(overlapped_.hEvent, timeoutMs);
+  DWORD result = WaitForSingleObject(overlappedWait_.hEvent, timeoutMs);
 
   if (result == WAIT_OBJECT_0) {
     DWORD bytesReturned = 0;
-    GetOverlappedResult(hWatchDir_, &overlapped_, &bytesReturned, FALSE);
+    GetOverlappedResult(hWatchDirWait_, &overlappedWait_, &bytesReturned, FALSE);
 
     if (bytesReturned == 0) {
-      Logger::logError("ERROR: Cannot get file info.\n");
+      Logger::logError("FileWatcher::waitForFileChange: ERROR: Cannot get file info.\n");
       return false;
     }
 
-    const FILE_NOTIFY_INFORMATION* pFileInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pBuf);
+    const FILE_NOTIFY_INFORMATION* pFileInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pNotifyBufWait_);
     char pMbFileName[_MAX_PATH];
 
     const int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, pFileInfo->FileName, -1, pMbFileName,
@@ -63,10 +76,57 @@ bool FileWatcher::waitForFileChange(int timeoutMs) {
     const std::string notifiedFilePath = dirPath_ + pMbFileName;
 
     if (notifiedFilePath == filePath_) {
+      peekFileChange();
+      preparePeek();
+
       if (pFileInfo->Action == FILE_ACTION_ADDED || pFileInfo->Action == FILE_ACTION_MODIFIED)
         return true;
     }
   }
 
   return false;
+}
+
+void FileWatcher::preparePeek() {
+  if (ReadDirectoryChangesW(hWatchDirCheck_, pNotifyBufCheck_, sizeof(pNotifyBufCheck_), FALSE,
+    FILE_NOTIFY_CHANGE_ATTRIBUTES, NULL, &overlappedCheck_, NULL) == 0) {
+    Logger::logError("FileWatcher::peek: ReadDirectoryChangesW function failed.\n");
+    return;
+  }
+}
+
+bool FileWatcher::peekFileChange() {
+  DWORD result = WaitForSingleObject(overlappedCheck_.hEvent, 0);
+
+  if (result == WAIT_TIMEOUT)
+    return false;
+
+  if (result == WAIT_OBJECT_0) {
+    DWORD bytesReturned = 0;
+    GetOverlappedResult(hWatchDirCheck_, &overlappedCheck_, &bytesReturned, FALSE);
+
+    if (bytesReturned == 0) {
+      Logger::logError("FileWatcher::peekFileChange: ERROR: Cannot get file info.\n");
+      return false;
+    }
+
+    const FILE_NOTIFY_INFORMATION* pFileInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pNotifyBufCheck_);
+    char pMbFileName[_MAX_PATH];
+
+    const int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, pFileInfo->FileName, -1, pMbFileName,
+      sizeof(pMbFileName), NULL, NULL);
+
+    const std::string notifiedFilePath = dirPath_ + pMbFileName;
+
+    if (notifiedFilePath == filePath_) {
+      preparePeek();
+
+      if (pFileInfo->Action == FILE_ACTION_ADDED || pFileInfo->Action == FILE_ACTION_MODIFIED)
+        return true;
+    }
+  }
+  else
+    return false;
+
+  return true;
 }
