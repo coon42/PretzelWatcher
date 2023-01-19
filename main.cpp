@@ -115,13 +115,15 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       pretzel.getProcessId());
 
   ULONGLONG startTimeMs = GetTickCount64();
+  bool pendingRestart = false;
 
   while (pThis->doWork_) {
+    Sleep(1000);
+
     const ULONGLONG curTimeMs = GetTickCount64();
     const ULONGLONG diffMs = curTimeMs - startTimeMs;
 
     if (diffMs < pThis->restartIntervalMs_) {
-      Sleep(1000);
 
       const ULONGLONG timeRemainingS = (pThis->restartIntervalMs_ - diffMs) / 1000;
 
@@ -133,9 +135,14 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       continue;
     }
 
-    Logger::logWarning("Waiting for end of current song before restart...\n");
+    if (!pendingRestart) {
+      Logger::logWarning("Waiting for end of current song before restart...\n");
 
-    pThis->watcher_.waitForFileChange();
+      pendingRestart = true;
+    }
+
+    if (!pThis->watcher_.peekFileChange())
+      continue;
 
     Logger::logSuccess("Song finished. Now restarting Pretzel app...\n");
 
@@ -153,6 +160,8 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       pretzel.close();
       pretzel.launch();
     }
+
+    pendingRestart = false;
 
     Logger::logSuccess("Pretzel running. Start playback...\n");
 
