@@ -147,7 +147,12 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       return 3;
     }
 
-    pThis->watcher_.waitForFileChange();
+    while (!pThis->watcher_.waitForFileChange(10000)) {
+      Logger::logWarning("Pretzel didn't seem to start up properly. Restarting again...\n");
+
+      pretzel.close();
+      pretzel.launch();
+    }
 
     Logger::logSuccess("Pretzel running. Start playback...\n");
 
