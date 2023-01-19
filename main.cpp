@@ -177,7 +177,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 //--------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char* ppArgv[]) {
-  printf("--- Pretzel Watcher v1.1 ---\n\n");
+  printf("--- Pretzel Watcher v1.2 ---\n\n");
 
   if (argc != 3) {
     printf("Usage: PretzelWatcher.exe <Track info file> <Restart interval minutes>\n");
