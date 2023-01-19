@@ -9,7 +9,7 @@
 // FileWatcher
 //--------------------------------------------------------------------------------------------------------------
 
-bool FileWatcher::waitForFileChange() {
+bool FileWatcher::waitForFileChange(int timeoutMs) {
   char pDrive[4];
   char pDir[_MAX_DIR];
   char pFile[_MAX_FNAME];
@@ -19,24 +19,30 @@ bool FileWatcher::waitForFileChange() {
 
   const std::string dirPath = __("%s%s", pDrive, pDir);
 
-  while (true) {
-    const HANDLE hDir = CreateFileA(dirPath.c_str(),
-      GENERIC_READ,
-      FILE_SHARE_READ,
-      NULL,
-      OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS,
-      NULL
-    );
+  const HANDLE hDir = CreateFileA(dirPath.c_str(),
+    FILE_LIST_DIRECTORY,
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    NULL,
+    OPEN_EXISTING,
+    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+    NULL);
 
-    unsigned char pBuf[sizeof(FILE_NOTIFY_INFORMATION) + _MAX_PATH]{0};
+  OVERLAPPED overlapped;
+  overlapped.hEvent = CreateEvent(NULL, FALSE, 0, NULL);
 
+  unsigned char pBuf[sizeof(FILE_NOTIFY_INFORMATION) + _MAX_PATH]{0};
+
+
+  if (ReadDirectoryChangesW(hDir, pBuf, sizeof(pBuf), FALSE, FILE_NOTIFY_CHANGE_ATTRIBUTES, NULL, &overlapped, NULL) == 0) {
+    Logger::logError("ERROR: ReadDirectoryChangesW function failed.\n");
+    return false;
+  }
+
+  DWORD result = WaitForSingleObject(overlapped.hEvent, timeoutMs);
+
+  if (result == WAIT_OBJECT_0) {
     DWORD bytesReturned = 0;
-
-    if (ReadDirectoryChangesW(hDir, pBuf, sizeof(pBuf), FALSE, FILE_NOTIFY_CHANGE_ATTRIBUTES, &bytesReturned, NULL, NULL) == 0) {
-      Logger::logError("ERROR: ReadDirectoryChangesW function failed.\n");
-      return false;
-    }
+    GetOverlappedResult(hDir, &overlapped, &bytesReturned, FALSE);
 
     if (bytesReturned == 0) {
       Logger::logError("ERROR: Cannot get file info.\n");
@@ -53,7 +59,13 @@ bool FileWatcher::waitForFileChange() {
 
     const std::string notifiedFilePath = dirPath + pMbFileName;
 
-    if (notifiedFilePath == filePath_)
-      return true;
+    if (notifiedFilePath == filePath_) {
+      if (pFileInfo->Action == FILE_ACTION_ADDED || pFileInfo->Action == FILE_ACTION_MODIFIED)
+        return true;
+    }
   }
+
+  CloseHandle(overlapped.hEvent);
+
+  return false;
 }

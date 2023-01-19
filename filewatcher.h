@@ -10,7 +10,7 @@ public:
   FileWatcher(const std::string& filePath) : filePath_(filePath) { };
 
   const std::string& filePath() { return filePath_; }
-  bool waitForFileChange();
+  bool waitForFileChange(int timeoutMs = INFINITE);
 
 private:
   const std::string filePath_;
