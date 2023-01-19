@@ -133,7 +133,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       const ULONGLONG m = (timeRemainingS / 60) % 60;
       const ULONGLONG s = timeRemainingS % 60;
 
-      SetConsoleTitleA(__("Pretzel Watcher - Next restart in: %02dh %02dm %02ds", h, m, s));
+      SetConsoleTitleA(__("Pretzel Watcher %s - Next restart in: %02dh %02dm %02ds", versionString.c_str(), h, m, s));
       continue;
     }
 
