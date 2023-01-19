@@ -7,6 +7,8 @@
 
 using namespace std;
 
+const std::string versionString = "v1.2";
+
 //--------------------------------------------------------------------------------------------------------------
 // PretzelWatcherApp
 //--------------------------------------------------------------------------------------------------------------
@@ -177,7 +179,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 //--------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char* ppArgv[]) {
-  printf("--- Pretzel Watcher v1.2 ---\n\n");
+  printf("--- Pretzel Watcher %s ---\n\n", versionString.c_str());
 
   if (argc != 3) {
     printf("Usage: PretzelWatcher.exe <Track info file> <Restart interval minutes>\n");
