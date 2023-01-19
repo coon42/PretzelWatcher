@@ -99,19 +99,26 @@ void PretzelProcess::sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const {
   SendInput(1, &ip, sizeof(INPUT));
 }
 
-void PretzelProcess::pressKey(BYTE vKey, BYTE bScan) const {
+void PretzelProcess::pressKeyGlobal(BYTE vKey, BYTE bScan) const {
   sendInput(vKey, bScan, 0);
   sendInput(vKey, bScan, KEYEVENTF_KEYUP);
+}
+
+void PretzelProcess::pressKeyProcessLocal(BYTE vKey) const {
+  const HWND hWnd = getHwnd();
+
+  SendMessage(hWnd, WM_KEYDOWN, vKey, 0);
+  SendMessage(hWnd, WM_KEYUP, vKey, 0);
 }
 
 void PretzelProcess::playMusic() const {
   Logger::log("Start playing music...\n");
 
-  pressKey(VK_MEDIA_PLAY_PAUSE, DIK_PLAYPAUSE);
+  pressKeyGlobal(VK_MEDIA_PLAY_PAUSE, DIK_PLAYPAUSE);
 }
 
 void PretzelProcess::stopMusic() const {
   Logger::log("Stop playing music...\n");
 
-  pressKey(VK_MEDIA_STOP, DIK_MEDIASTOP);
+  pressKeyGlobal(DIK_MEDIASTOP, DIK_MEDIASTOP);
 }

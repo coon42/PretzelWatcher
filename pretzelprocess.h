@@ -24,7 +24,8 @@ public:
 
 private:
   void sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const;
-  void pressKey(BYTE vKey, BYTE bScan) const;
+  void pressKeyGlobal(BYTE vKey, BYTE bScan) const;
+  void pressKeyProcessLocal(BYTE vKey) const;
   HWND getHwnd() const;
   std::string getExePath() const;
 
