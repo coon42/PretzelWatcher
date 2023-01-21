@@ -156,6 +156,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       return 3;
     }
 
+relaunch:
     while (!pThis->watcher_.waitForFileChange(10000)) {
       Logger::logWarning("Pretzel didn't seem to start up properly. Restarting again...\n");
 
@@ -165,9 +166,22 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 
     pendingRestart = false;
 
-    Logger::logSuccess("Pretzel running. Start playback...\n");
+    Logger::logSuccess("Pretzel running.\n");
 
-    pretzel.playMusic();
+    const int maxPlayTries = 5;
+
+    for (int i = 0; !pThis->watcher_.peekFileChange(); ++i) {
+      if (i == maxPlayTries) {
+        Logger::logError("Unable to start playback.\n");
+        goto relaunch;
+      }
+
+      Logger::log("Start playback try %d/%d\n", i + 1, maxPlayTries);
+
+      pretzel.playMusic();
+      Sleep(2000);
+    }
+
     startTimeMs = GetTickCount64();
   }
 
