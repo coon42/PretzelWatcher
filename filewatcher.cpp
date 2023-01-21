@@ -60,7 +60,11 @@ bool FileWatcher::waitForFileChange(int timeoutMs) {
 
   if (result == WAIT_OBJECT_0) {
     DWORD bytesReturned = 0;
-    GetOverlappedResult(hWatchDirWait_, &overlappedWait_, &bytesReturned, FALSE);
+    if (!GetOverlappedResult(hWatchDirWait_, &overlappedWait_, &bytesReturned, FALSE)) {
+      Logger::logError("Error getting overlapped result.\n");
+
+      return false;
+    }
 
     if (bytesReturned == 0) {
       Logger::logError("FileWatcher::waitForFileChange: ERROR: Cannot get file info.\n");
