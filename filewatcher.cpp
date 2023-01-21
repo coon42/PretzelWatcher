@@ -79,6 +79,8 @@ bool FileWatcher::waitForFileChange(int timeoutMs) {
     const std::string notifiedFilePath = dirPath_ + pMbFileName;
 
     if (notifiedFilePath == filePath_) {
+      Logger::logWarning("File changed\n");
+
       peekFileChange();
       preparePeek();
 
@@ -86,6 +88,10 @@ bool FileWatcher::waitForFileChange(int timeoutMs) {
         return true;
     }
   }
+  else if (result == WAIT_TIMEOUT)
+    Logger::logWarning("File NOT changed\n");
+  else
+    Logger::logError("FileWatcher::waitForFileChange: error on waiting. Result = %X", result);
 
   return false;
 }
