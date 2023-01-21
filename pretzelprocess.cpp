@@ -9,8 +9,8 @@
 // PretzelProcess
 //--------------------------------------------------------------------------------------------------------------
 
-PretzelProcess::PretzelProcess(const std::string& title, const std::string& className)
-    : title_(title), className_(className), exePath_(getExePath()) {
+PretzelProcess::PretzelProcess(const std::string& title, const std::string& className, const std::string& songTxtFilePath)
+    : title_(title), className_(className), exePath_(getExePath()), watcher_(songTxtFilePath) {
 
 }
 

@@ -4,16 +4,19 @@
 #include <string>
 #include <windows.h>
 
+#include "filewatcher.h"
+
 //--------------------------------------------------------------------------------------------------------------
 // PretzelProcess
 //--------------------------------------------------------------------------------------------------------------
 
 class PretzelProcess {
 public:
-  PretzelProcess(const std::string& title, const std::string& className);
+  PretzelProcess(const std::string& title, const std::string& className, const std::string& songTxtFilePath);
 
   DWORD getProcessId() const;
   const std::string& exePath() const { return exePath_; }
+  FileWatcher& watcher()             { return watcher_; }
 
   bool isRunning() const;
   bool launch();
@@ -32,6 +35,8 @@ private:
   const std::string title_;
   const std::string className_;
   const std::string exePath_;
+
+  FileWatcher watcher_;
 };
 
 #endif // PRETZELPROCESS_H

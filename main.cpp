@@ -3,7 +3,6 @@
 #include "logger.h"
 #include "pretzelprocess.h"
 #include "stringhelpers.h"
-#include "filewatcher.h"
 
 using namespace std;
 
@@ -28,7 +27,7 @@ private:
   bool workerThreadIsRunning() const;
   static DWORD WINAPI workerThread(LPVOID lpParam);
 
-  FileWatcher watcher_;
+  const string& songTxtFilePath_;
   const DWORD restartIntervalMs_;
   const DWORD maxWaitForTrackFinishMs_ = 15 * 60 * 1000; // 15 minutes
 };
@@ -38,12 +37,12 @@ private:
 //--------------------------------------------------------------------------------------------------------------
 
 PretzelWatcherApp::PretzelWatcherApp(const string& songTxtFilePath, DWORD restartIntervalMs)
-    : watcher_(songTxtFilePath), restartIntervalMs_(restartIntervalMs) {
+    : songTxtFilePath_(songTxtFilePath), restartIntervalMs_(restartIntervalMs) {
 
 }
 
 int PretzelWatcherApp::run() {
-  printf("Track Info File: %s\n", watcher_.filePath().c_str());
+  printf("Track Info File: %s\n", songTxtFilePath_.c_str());
   printf("Restart interval: %d minutes\n\n", restartIntervalMs_ / (1000 * 60));
 
   printf("Press 'q' to quit.\n\n");
@@ -104,7 +103,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 
   Logger::logSuccess("Worker thread started.\n");
 
-  PretzelProcess pretzel("Pretzel Rocks", "Chrome_WidgetWin_1");
+  PretzelProcess pretzel("Pretzel Rocks", "Chrome_WidgetWin_1", pThis->songTxtFilePath_);
 
   Logger::log("Looking for Pretzel process...\n");
 
@@ -154,7 +153,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
 
     if (timeRemainingS <= 0)
       Logger::logWarning("\nTrack didn't finish in time. Forcing restart.\n");
-    else if (!pThis->watcher_.peekFileChange())
+    else if (!pretzel.watcher().peekFileChange())
       continue;
     else
       Logger::logSuccess("\nSong finished. Now restarting Pretzel app...\n");
@@ -168,7 +167,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     }
 
 relaunch:
-    while (!pThis->watcher_.waitForFileChange(10000)) {
+    while (!pretzel.watcher().waitForFileChange(10000)) {
       Logger::logWarning("Pretzel didn't seem to start up properly. Restarting again...\n");
 
       pretzel.close();
@@ -181,7 +180,7 @@ relaunch:
 
     const int maxPlayTries = 5;
 
-    for (int i = 0; !pThis->watcher_.peekFileChange(); ++i) {
+    for (int i = 0; !pretzel.watcher().peekFileChange(); ++i) {
       if (i == maxPlayTries) {
         Logger::logError("Unable to start playback.\n");
         goto relaunch;
