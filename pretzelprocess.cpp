@@ -48,6 +48,15 @@ std::string PretzelProcess::getExePath() const {
   return pExePath;
 }
 
+const std::string PretzelProcess::getCurrentTrack() const {
+  std::ifstream f(watcher_.filePath());
+
+  std::string trackInfo;
+  std::getline(f, trackInfo);
+
+  return trackInfo;
+}
+
 bool PretzelProcess::isRunning() const {
   const DWORD processId = getProcessId();
 

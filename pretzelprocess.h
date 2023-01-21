@@ -16,6 +16,7 @@ public:
 
   DWORD getProcessId() const;
   const std::string& exePath() const { return exePath_; }
+  const std::string getCurrentTrack() const;
   FileWatcher& watcher()             { return watcher_; }
 
   bool isRunning() const;
