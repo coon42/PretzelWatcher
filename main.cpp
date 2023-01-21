@@ -158,27 +158,26 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     else
       Logger::logSuccess("\nSong finished. Now restarting Pretzel app...\n");
 
-    pretzel.close();
+    do {
+      if (!pretzel.close()) {
+        Logger::logError("Unable to stop pretzel app! Quitting...\n");
+        return 10;
+      }
 
-    if (!pretzel.launch()) {
-      Logger::logError("Failed to relaunch Pretzel app! Quitting...\n");
-      return 3;
-    }
+      if (!pretzel.launch()) {
+        Logger::logError("Failed to relaunch Pretzel app! Quitting...\n");
+        return 3;
+      }
 
-relaunch:
-    while (!pretzel.watcher().waitForFileChange(10000)) {
-      Logger::logWarning("Pretzel didn't seem to start up properly. Restarting again...\n");
+      if (!pretzel.playMusic()) {
+        Logger::logWarning("Pretzel didn't seem to start up properly. Restarting again...\n");
+        continue;
+      }
 
-      pretzel.close();
-      pretzel.launch();
-    }
-
-    pendingRestart = false;
+      break;
+    } while (true);
 
     Logger::logSuccess("Pretzel running.\n");
-
-    if (!pretzel.playMusic())
-      goto relaunch;
 
     pendingRestart = false;
 
