@@ -158,7 +158,6 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     else
       Logger::logSuccess("\nSong finished. Now restarting Pretzel app...\n");
 
-    pretzel.stopMusic();
     pretzel.close();
 
     if (!pretzel.launch()) {
