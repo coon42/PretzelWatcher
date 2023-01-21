@@ -177,19 +177,10 @@ relaunch:
 
     Logger::logSuccess("Pretzel running.\n");
 
-    const int maxPlayTries = 5;
+    if (!pretzel.playMusic())
+      goto relaunch;
 
-    for (int i = 0; !pretzel.watcher().peekFileChange(); ++i) {
-      if (i == maxPlayTries) {
-        Logger::logError("Unable to start playback.\n");
-        goto relaunch;
-      }
-
-      Logger::log("Start playback try %d/%d\n", i + 1, maxPlayTries);
-
-      pretzel.playMusic();
-      Sleep(2000);
-    }
+    pendingRestart = false;
 
     startTimeMs = GetTickCount64();
   }

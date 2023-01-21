@@ -22,8 +22,8 @@ public:
   bool launch();
   bool close();
 
-  void playMusic() const;
   void stopMusic() const;
+  bool playMusic();
 
 private:
   void sendInput(BYTE vKey, BYTE bScan, DWORD dwFlags) const;

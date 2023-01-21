@@ -1,5 +1,6 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
+#include <fstream>
 
 #include "Logger.h"
 
@@ -116,10 +117,28 @@ bool PretzelProcess::isPlaying() const {
   return true;
 }
 
-void PretzelProcess::playMusic() const {
+bool PretzelProcess::playMusic() {
   Logger::log("Start playing music...\n");
 
-  pressKeyGlobal(VK_MEDIA_PLAY_PAUSE, DIK_PLAYPAUSE);
+  const int maxPlayTries = 5;
+
+  for (int i = 0; ; ++i) {
+    if (i == maxPlayTries) {
+      Logger::logError("Unable to start playback.\n");
+      return false;
+    }
+
+    Logger::log("Start playback try %d/%d\n", i + 1, maxPlayTries);
+
+    pressKeyGlobal(VK_MEDIA_PLAY_PAUSE, DIK_PLAYPAUSE);
+
+    if (watcher_.waitForFileChange(5000)) {
+      if (isPlaying())
+        return true;
+    }
+  }
+
+  return false;
 }
 
 void PretzelProcess::stopMusic() const {
