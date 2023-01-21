@@ -63,6 +63,9 @@ bool PretzelProcess::launch() {
   if (INT_PTR(ShellExecuteA(NULL, "open", exePath_.c_str(), NULL, NULL, SW_SHOWNORMAL)) <= 32)
     return false;
 
+  if (!watcher_.waitForFileChange(5000))
+    return false;
+
   return true;
 }
 
