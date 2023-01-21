@@ -207,5 +207,9 @@ int main(int argc, char* ppArgv[]) {
 
   PretzelWatcherApp app(songTxtFilePath, restartIntervalMs);
 
-  return app.run();
+  int error = app.run();
+
+  _getch();
+
+  return error;
 }
