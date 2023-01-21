@@ -69,9 +69,12 @@ bool FileWatcher::waitForFileChange(int timeoutMs) {
 
     const FILE_NOTIFY_INFORMATION* pFileInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION*>(pNotifyBufWait_);
     char pMbFileName[_MAX_PATH];
+    const int numWchars = pFileInfo->FileNameLength / sizeof(wchar_t);
 
-    const int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, pFileInfo->FileName, -1, pMbFileName,
-        sizeof(pMbFileName), NULL, NULL);
+    const int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, pFileInfo->FileName, numWchars,
+        pMbFileName, sizeof(pMbFileName), NULL, NULL);
+
+    pMbFileName[len] = '\0';
 
     const std::string notifiedFilePath = dirPath_ + pMbFileName;
 
