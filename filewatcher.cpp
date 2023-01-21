@@ -67,7 +67,7 @@ bool FileWatcher::waitForFileChange(int timeoutMs) {
     }
 
     if (bytesReturned == 0) {
-      Logger::logError("FileWatcher::waitForFileChange: ERROR: Cannot get file info.\n");
+      Logger::logError("FileWatcher::waitForFileChange: ERROR: Cannot get file info. Error code: %d\n", GetLastError());
       return false;
     }
 
