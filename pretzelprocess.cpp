@@ -141,8 +141,16 @@ bool PretzelProcess::playMusic() {
   return false;
 }
 
-void PretzelProcess::stopMusic() const {
+bool PretzelProcess::stopMusic() {
   Logger::log("Stop playing music...\n");
 
   pressKeyGlobal(DIK_MEDIASTOP, DIK_MEDIASTOP);
+
+  if (!watcher_.waitForFileChange(5000))
+    return false;
+
+  if (isPlaying())
+    return false;
+
+  return true;
 }
