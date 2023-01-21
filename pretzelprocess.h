@@ -31,6 +31,7 @@ private:
   void pressKeyProcessLocal(BYTE vKey) const;
   HWND getHwnd() const;
   std::string getExePath() const;
+  bool isPlaying() const;
 
   const std::string title_;
   const std::string className_;

@@ -104,6 +104,18 @@ void PretzelProcess::pressKeyProcessLocal(BYTE vKey) const {
   SendMessage(hWnd, WM_KEYUP, vKey, 0);
 }
 
+bool PretzelProcess::isPlaying() const {
+  std::ifstream f(watcher_.filePath());
+
+  std::string trackInfo;
+  std::getline(f, trackInfo);
+
+  if (trackInfo == "paused")
+    return false;
+
+  return true;
+}
+
 void PretzelProcess::playMusic() const {
   Logger::log("Start playing music...\n");
 
