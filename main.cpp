@@ -30,6 +30,7 @@ private:
 
   FileWatcher watcher_;
   const DWORD restartIntervalMs_;
+  const DWORD maxWaitForTrackFinishMs_ = 15 * 60 * 1000; // 15 minutes
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -117,6 +118,7 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
       pretzel.getProcessId());
 
   ULONGLONG startTimeMs = GetTickCount64();
+  ULONGLONG restartInitTimeMs = 0;
   bool pendingRestart = false;
 
   while (pThis->doWork_) {
@@ -138,15 +140,24 @@ DWORD WINAPI PretzelWatcherApp::workerThread(LPVOID lpParam) {
     }
 
     if (!pendingRestart) {
-      Logger::logWarning("Waiting for end of current song before restart...\n");
-
+      restartInitTimeMs = GetTickCount64();
       pendingRestart = true;
     }
 
-    if (!pThis->watcher_.peekFileChange())
-      continue;
+    const ULONGLONG timeRemainingS = (pThis->maxWaitForTrackFinishMs_ - (GetTickCount64() - restartInitTimeMs)) / 1000;
 
-    Logger::logSuccess("Song finished. Now restarting Pretzel app...\n");
+    const ULONGLONG h = timeRemainingS / (60 * 60);
+    const ULONGLONG m = (timeRemainingS / 60) % 60;
+    const ULONGLONG s = timeRemainingS % 60;
+
+    Logger::logWarning("Waiting for end of current song before restart (Timeout in: %02dh %02dm %02ds)\r", h, m, s);
+
+    if (timeRemainingS <= 0)
+      Logger::logWarning("\nTrack didn't finish in time. Forcing restart.\n");
+    else if (!pThis->watcher_.peekFileChange())
+      continue;
+    else
+      Logger::logSuccess("\nSong finished. Now restarting Pretzel app...\n");
 
     pretzel.stopMusic();
     pretzel.close();
